@@ -1,0 +1,51 @@
+:root {
+  --color-bg: #0a0a0f;
+  --color-bg-soft: #13131a;
+  --color-bg-card: #1a1a24;
+  --color-bg-card-hover: #22222f;
+
+  --color-gold: #c8a96e;
+  --color-gold-light: #e8c98e;
+  --color-gold-dark: #a07840;
+
+  --color-text: #e8e0d0;
+  --color-text-muted: #8a8070;
+  --color-border: #2a2a3a;
+
+  --font-main: 'Segoe UI', system-ui, sans-serif;
+
+  --radius: 4px;
+  --transition: 0.2s ease;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-main);
+  min-height: 100vh;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+a {
+  color: var(--color-gold);
+  text-decoration: none;
+}
