@@ -1,44 +1,71 @@
-# .
+# LoL Champion Stats Dashboard
 
-This template should help get you started developing with Vue 3 in Vite.
+A desktop application for browsing League of Legends champion stats, abilities, and lore. Built with Electron and Vue 3 as a portfolio project targeting a Software Engineer role at Riot Games.
 
-## Recommended IDE Setup
+## Features
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- Browse all 170+ champions with portraits, titles, and role tags
+- Live search filtering as you type
+- Champion detail view with base stats, abilities, and lore
+- Ability descriptions with damage-type color coding
+- Local disk cache for instant load on relaunch
+- Dark theme styled to match Riot's design
 
-## Recommended Browser Setup
+## Tech Stack
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+| Layer | Technology |
+|---|---|
+| Desktop shell | Electron 42 |
+| Frontend framework | Vue 3 (Composition API) |
+| State management | Pinia |
+| Routing | Vue Router |
+| Build tool | Vite |
+| Data source | Riot Data Dragon CDN |
 
-## Customize configuration
+## Architecture
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+The app follows Electron's two-process model:
 
-## Project Setup
+- **Main process** (`electron/main.js`) — creates the OS window, manages the champion data cache on disk via IPC handlers
+- **Preload script** (`electron/preload.cjs`) — exposes a minimal, typed API to the renderer via `contextBridge`
+- **Renderer process** (`src/`) — Vue 3 SPA handling all UI, routing, and data fetching
+
+Security practices applied:
+- `nodeIntegration: false` and `contextIsolation: true`
+- Content Security Policy restricting scripts, styles, images, and network requests
+- IPC communication via `contextBridge` with an explicitly whitelisted API surface
+
+## Project Structure
+
+```
+electron/
+  main.js         # Main process — window creation, IPC, disk cache
+  preload.cjs     # Context bridge — exposes electronAPI to renderer
+
+src/
+  stores/
+    champions.js  # Pinia store — fetches, caches, and filters champion data
+  views/
+    HomeView.vue            # Champion grid with live search
+    ChampionDetailView.vue  # Stats, abilities, and lore for one champion
+  components/
+    ChampionCard.vue        # Reusable card component used in the grid
+  assets/
+    base.css      # Design tokens — colors, typography, spacing variables
+    main.css      # Global layout and utility classes
+```
+
+## Running Locally
 
 ```sh
 npm install
+npm run electron:dev
 ```
 
-### Compile and Hot-Reload for Development
+## Data Source
 
-```sh
-npm run dev
-```
+Champion data is fetched from [Riot Data Dragon](https://developer.riotgames.com/docs/lol#data-dragon), Riot's static CDN for League of Legends game data. No API key is required.
 
-### Compile and Minify for Production
+## Disclaimer
 
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+This project is not affiliated with, endorsed by, or sponsored by Riot Games. League of Legends and all related assets are the property of Riot Games, Inc. Champion data is sourced from the publicly available Data Dragon API.
