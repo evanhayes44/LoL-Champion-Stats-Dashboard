@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite",
     "electron:dev": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "vite build && electron-builder",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "run-s lint:*",
@@ -39,5 +40,21 @@
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
+  },
+  "build": {
+    "appId": "com.evanhayes.lol-champion-stats",
+    "productName": "LoL Champion Stats Dashboard",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "public/garfield.ico"
+    }
   }
 }
