@@ -4,15 +4,20 @@ import { defineStore } from 'pinia'
 export const useChampionsStore = defineStore('champions', () => {
     const champions = ref([])
     const searchQuery = ref('')
+    const tagFilter = ref('')
 
     const isLoading = ref(false)
     const error = ref(null)
     const version = ref('')
 
     const filteredChampions = computed(() => {
-        if (!searchQuery.value) return champions.value
-        const query = searchQuery.value.toLowerCase()
-        return champions.value.filter(c => c.name.toLowerCase().includes(query))
+        return champions.value.filter(c => {
+            const matchesSearch = !searchQuery.value ||
+                c.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+            const matchesTag = !tagFilter.value ||
+                c.tags.includes(tagFilter.value)
+            return matchesSearch && matchesTag
+        })
     })
 
     async function fetchChampions() {
@@ -51,6 +56,7 @@ export const useChampionsStore = defineStore('champions', () => {
     return {
         champions,
         searchQuery,
+        tagFilter,
         isLoading,
         error,
         version,
