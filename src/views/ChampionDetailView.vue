@@ -16,26 +16,26 @@ const isLoading = ref(true)
 const error = ref(null)
 
 const statLabels = {
-    hp: 'HP',
-    hpperlevel: 'HP Per Level',
-    mp: 'Mana',
-    mpperlevel: 'Mana Per Level',
-    movespeed: 'Move Speed',
-    armor: 'Armor',
-    armorperlevel: 'Armor Per Level',
-    spellblock: 'Magic Resist',
-    spellblockperlevel: 'Magic Resist Per Level',
-    attackrange: 'Attack Range',
-    hpregen: 'HP Regen',
-    hpregenperlevel: 'HP Regen Per Level',
-    mpregen: 'Mana Regen',
-    mpregenperlevel: 'Mana Regen Per Level',
-    crit: 'Crit Chance',
-    critperlevel: 'Crit Per Level',
-    attackdamage: 'Attack Damage (AD)',
-    attackdamageperlevel: 'AD Per Level',
-    attackspeedperlevel: 'AS Per Level',
-    attackspeed: 'Attack Speed (AS)',
+  hp: 'HP',
+  hpperlevel: 'HP Per Level',
+  mp: 'Mana',
+  mpperlevel: 'Mana Per Level',
+  movespeed: 'Move Speed',
+  armor: 'Armor',
+  armorperlevel: 'Armor Per Level',
+  spellblock: 'Magic Resist',
+  spellblockperlevel: 'Magic Resist Per Level',
+  attackrange: 'Attack Range',
+  hpregen: 'HP Regen',
+  hpregenperlevel: 'HP Regen Per Level',
+  mpregen: 'Mana Regen',
+  mpregenperlevel: 'Mana Regen Per Level',
+  crit: 'Crit Chance',
+  critperlevel: 'Crit Per Level',
+  attackdamage: 'Attack Damage (AD)',
+  attackdamageperlevel: 'AD Per Level',
+  attackspeedperlevel: 'AS Per Level',
+  attackspeed: 'Attack Speed (AS)',
 }
 
 function formatStatKey(key) {
@@ -51,6 +51,18 @@ function formatDescription(text) {
     .replace(/<status>(.*?)<\/status>/g, '<span class="status-effect">$1</span>')
     .replace(/<scaleAP>(.*?)<\/scaleAP>/g, '<span class="magic-damage">$1</span>')
     .replace(/<scaleAD>(.*?)<\/scaleAD>/g, '<span class="physical-damage">$1</span>')
+}
+
+function formatCost(spell) {
+  const cost = (spell.costBurn ?? '').trim()
+  let type = (spell.costType ?? '').trim()
+
+  if (type.includes('abilityresourcename')) {
+    type = champion.value.partype
+  }
+
+  if (!cost || cost === '0' || type === 'No Cost') return 'No Cost'
+  return type ? `${cost} ${type}` : cost
 }
 
 onMounted(async () => {
@@ -76,10 +88,8 @@ onMounted(async () => {
 
     <div v-else class="champion-detail">
       <div class="champion-header">
-        <img
-          :src="`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${champion.id}.png`"
-          :alt="champion.name"
-        />
+        <img :src="`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${champion.id}.png`"
+          :alt="champion.name" />
         <div>
           <h1>{{ champion.name }}</h1>
           <p class="champion-title">{{ champion.title }}</p>
@@ -103,12 +113,33 @@ onMounted(async () => {
 
       <section class="champion-abilities">
         <h2>Abilities</h2>
+
         <div class="ability">
-          <strong>Passive — {{ champion.passive.name }}</strong>
+          <div class="ability-header">
+            <img :src="`https://ddragon.leagueoflegends.com/cdn/${version}/img/passive/${champion.passive.image.full}`"
+              :alt="champion.passive.name" class="ability-icon" />
+            <div class="ability-title">
+              <span class="ability-slot">Passive</span>
+              <strong>{{ champion.passive.name }}</strong>
+            </div>
+          </div>
           <p v-html="formatDescription(champion.passive.description)"></p>
         </div>
-        <div v-for="spell in champion.spells" :key="spell.id" class="ability">
-          <strong>{{ spell.name }}</strong>
+
+        <div v-for="(spell, index) in champion.spells" :key="spell.id" class="ability">
+          <div class="ability-header">
+            <img :src="`https://ddragon.leagueoflegends.com/cdn/${version}/img/spell/${spell.image.full}`"
+              :alt="spell.name" class="ability-icon" />
+            <div class="ability-title">
+              <span class="ability-slot">{{ ['Q', 'W', 'E', 'R'][index] }}</span>
+              <strong>{{ spell.name }}</strong>
+            </div>
+          </div>
+          <div class="ability-stats">
+            <span>Cooldown: {{ spell.cooldownBurn }}s</span>
+            <span>Cost: {{ formatCost(spell) }}</span>
+            <span>Range: {{ spell.rangeBurn }}</span>
+          </div>
           <p v-html="formatDescription(spell.description)"></p>
         </div>
       </section>
@@ -243,5 +274,42 @@ section h2 {
 
 :deep(.status-effect) {
   color: #ce93d8;
+}
+
+.ability-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.ability-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.ability-title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.ability-slot {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-gold);
+  font-weight: 700;
+}
+
+.ability-stats {
+  display: flex;
+  gap: 1.25rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
 }
 </style>
