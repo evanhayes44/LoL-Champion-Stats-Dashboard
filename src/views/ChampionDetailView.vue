@@ -1,6 +1,6 @@
 <script setup>
 import { useRoute } from 'vue-router'
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useChampionsStore } from '../stores/champions'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
@@ -14,6 +14,8 @@ const { version } = storeToRefs(store)
 const champion = ref(null)
 const isLoading = ref(true)
 const error = ref(null)
+const championSkins = ref(0)
+const skinsIndex = ref(0)
 
 const statLabels = {
   hp: 'HP',
@@ -63,6 +65,24 @@ function formatCost(spell) {
 
   if (!cost || cost === '0' || type === 'No Cost') return 'No Cost'
   return type ? `${cost} ${type}` : cost
+}
+
+const allSkins = computed(() =>
+  champion.value?.skins.filter(skin => !skin.name.includes('(')) ?? []
+)
+
+const canScroll = computed(() => allSkins.value.length > 4)
+
+const visibleSkins = computed(() => {
+  const skins = allSkins.value
+  if (!skins.length) return []
+  if (skins.length <= 4) return skins
+  return [0, 1, 2, 3].map(offset => skins[(skinsIndex.value + offset) % skins.length])
+})
+
+function scrollSkins(dir) {
+  const total = allSkins.value.length
+  skinsIndex.value = (skinsIndex.value + dir + total) % total
 }
 
 onMounted(async () => {
@@ -141,6 +161,28 @@ onMounted(async () => {
             <span>Range: {{ spell.rangeBurn }}</span>
           </div>
           <p v-html="formatDescription(spell.description)"></p>
+        </div>
+      </section>
+
+      <section class="skin-viewer">
+        <h2>Skins</h2>
+
+        <div class="skin-carousel">
+          <button v-if="canScroll" class="skin-btn" @click="scrollSkins(-1)">←</button>
+          <TransitionGroup name="skin-scroll" tag="div" class="skin-strip">
+            <div v-for="skin in visibleSkins" :key="skin.num" class="skin-card">
+              <img class="skin-splash"
+                :src="`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champion.id}_${skin.num}.jpg`"
+                :alt="skin.name" />
+              <div class="skin-loading-popup">
+                <img class="skin-loading"
+                  :src="`https://ddragon.leagueoflegends.com/cdn/img/champion/loading/${champion.id}_${skin.num}.jpg`"
+                  :alt="skin.name" />
+                <div class="skin-name">{{ skin.name === 'default' ? champion.name : skin.name }}</div>
+              </div>
+            </div>
+          </TransitionGroup>
+          <button v-if="canScroll" class="skin-btn" @click="scrollSkins(1)">→</button>
         </div>
       </section>
     </div>
@@ -311,5 +353,99 @@ section h2 {
   margin-bottom: 0.5rem;
   font-size: 0.8rem;
   color: var(--color-text-muted);
+}
+
+.skin-carousel {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  position: relative;
+  isolation: isolate;
+}
+
+.skin-strip {
+  display: flex;
+  overflow: visible;
+  flex: 1;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.skin-card {
+  flex: 0 0 calc(25% - 0.375rem);
+  position: relative;
+  border-radius: var(--radius);
+  cursor: pointer;
+  height: 160px;
+}
+
+.skin-splash {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius);
+  display: block;
+}
+
+.skin-loading-popup {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(8px) scale(0.9);
+  width: 130px;
+  border-radius: var(--radius);
+  border: 2px solid var(--color-gold-dark);
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 20;
+  pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+}
+
+.skin-loading-popup img {
+  width: 100%;
+  display: block;
+}
+
+.skin-name {
+  padding: 0.4rem 0.5rem;
+  background: rgba(0, 0, 0, 0.8);
+  color: var(--color-gold-light);
+  font-size: 0.7rem;
+  text-align: center;
+}
+
+.skin-card:hover .skin-loading-popup {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+.skin-btn {
+  color: #c89b3c !important;
+  font-size: 1.5rem;
+  font-weight: bold;
+  padding: 0.5rem;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 30;
+  transition: color var(--transition);
+}
+
+.skin-btn:hover {
+  color: #f0e6d3;
+}
+
+.skin-scroll-enter-active,
+.skin-scroll-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.skin-scroll-enter-from {
+  opacity: 0;
+}
+
+.skin-scroll-leave-to {
+  opacity: 0;
 }
 </style>

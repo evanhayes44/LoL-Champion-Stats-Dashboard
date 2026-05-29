@@ -10,6 +10,7 @@ A desktop application for browsing League of Legends champion stats, abilities, 
 - Champion detail view with base stats and full lore
 - Ability viewer with icons, slot labels (Passive/Q/W/E/R), cooldowns, costs, and ranges per rank
 - Ability descriptions with damage-type color coding
+- Skin browser with scrollable carousel, loading screen art popup on hover
 - Local disk cache for instant load on relaunch
 - Dark theme styled to match Riot's design
 
