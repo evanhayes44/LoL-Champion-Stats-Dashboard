@@ -6,7 +6,8 @@ A desktop application for browsing League of Legends champion stats, abilities, 
 
 - Browse all 170+ champions with portraits, titles, and role tags
 - Live search filtering as you type
-- Champion detail view with base stats, abilities, and lore
+- Champion detail view with base stats and full lore
+- Ability viewer with icons, slot labels (Passive/Q/W/E/R), cooldowns, costs, and ranges per rank
 - Ability descriptions with damage-type color coding
 - Local disk cache for instant load on relaunch
 - Dark theme styled to match Riot's design
