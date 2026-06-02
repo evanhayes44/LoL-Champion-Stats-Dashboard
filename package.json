@@ -1,6 +1,6 @@
 {
   "name": "lol-champion-stats-dashboard",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "main": "electron/main.js",
@@ -55,6 +55,9 @@
     "win": {
       "target": "nsis",
       "icon": "public/garfield.ico"
+    },
+    "publish": {
+      "provider": "github"
     }
   }
 }

@@ -1,8 +1,12 @@
-name: Build
+name: Build & Release
 
 on:
   push:
-    branches: [main]
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -13,13 +17,12 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - run: npm install
 
-      - run: npm run electron:build
+      - run: npm run build
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: release
-          path: release/
+      - run: npx electron-builder --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
