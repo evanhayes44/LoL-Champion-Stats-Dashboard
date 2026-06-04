@@ -18,7 +18,7 @@ FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 # Copy JAR from builder stage
-COPY --from=builder /app/target/lol-dashboard-*.jar app.jar
+COPY --from=builder /app/target/backend-*.jar app.jar
 
 # Expose port
 EXPOSE 8080
