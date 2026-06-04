@@ -1,6 +1,12 @@
 {
   "name": "lol-champion-stats-dashboard",
   "version": "1.0.0",
+  "description": "A full-stack desktop application for browsing League of Legends champion stats, abilities, and lore",
+  "author": "Evan Hayes",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/evanhayes44/LoL-Champion-Stats-Dashboard.git"
+  },
   "private": true,
   "type": "module",
   "main": "electron/main.js",
