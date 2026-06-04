@@ -8,7 +8,7 @@ const { filteredChampions, isLoading, error, searchQuery, tagFilter } = storeToR
 </script>
 
 <template>
-  <main class="champion-list-view">
+  <main class="dsf-list-view">
     <div class="filter-header">
       <div class="search-bar">
         <input v-model="searchQuery" type="text" placeholder="Search Champions..." />
@@ -33,14 +33,14 @@ const { filteredChampions, isLoading, error, searchQuery, tagFilter } = storeToR
       {{ error }}
     </div>
 
-    <div v-else class="champion-grid">
-      <ChampionCard v-for="champion in filteredChampions" :key="champion.id" :champion="champion" />
+    <div v-else class="dsf-grid">
+      <ChampionCard v-for="dsf in filteredChampions" :key="dsf.id" :dsf="dsf" />
     </div>
   </main>
 </template>
 
 <style scoped>
-.champion-list-view {
+.dsf-list-view {
   padding: 2rem;
   flex: 1;
 }
@@ -66,7 +66,7 @@ const { filteredChampions, isLoading, error, searchQuery, tagFilter } = storeToR
   border-color: var(--color-gold);
 }
 
-.champion-grid {
+.dsf-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 1rem;

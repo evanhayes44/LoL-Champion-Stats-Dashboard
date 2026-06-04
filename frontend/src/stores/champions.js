@@ -15,7 +15,7 @@ export const useChampionsStore = defineStore('champions', () => {
             const matchesSearch = !searchQuery.value ||
                 c.name.toLowerCase().includes(searchQuery.value.toLowerCase())
             const matchesTag = !tagFilter.value ||
-                c.tags.includes(tagFilter.value)
+                (c.tags ?? []).includes(tagFilter.value)
             return matchesSearch && matchesTag
         })
     })
@@ -25,23 +25,33 @@ export const useChampionsStore = defineStore('champions', () => {
         error.value = null
 
         try {
+            const versionRes = await fetch('/api/ddragon/api/versions.json')
+            if (!versionRes.ok) {
+                throw new Error(`Failed to fetch versions (${versionRes.status})`)
+            }
+            const versions = await versionRes.json()
+            const latestVersion = versions[0]
+            version.value = latestVersion
+
             const cached = await window.electronAPI.getCache()
-            if (cached) {
+            if (
+                cached?.version === latestVersion &&
+                Array.isArray(cached.champions) &&
+                cached.champions.length
+            ) {
                 champions.value = cached.champions
-                version.value = cached.version
                 return
             }
 
-            const versionRes = await fetch('https://ddragon.leagueoflegends.com/api/versions.json')
-            const versions = await versionRes.json()
-            version.value = versions[0] // latest version
-
-            const champRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${version.value}/data/en_US/champion.json`)
+            const champRes = await fetch(`/api/ddragon/cdn/${latestVersion}/data/en_US/champion.json`)
+            if (!champRes.ok) {
+                throw new Error(`Failed to fetch champions (${champRes.status})`)
+            }
             const champData = await champRes.json()
             champions.value = Object.values(champData.data)
 
             await window.electronAPI.setCache({
-                version: version.value,
+                version: latestVersion,
                 champions: toRaw(champions.value)
             })
         }
@@ -64,4 +74,3 @@ export const useChampionsStore = defineStore('champions', () => {
         fetchChampions
     }
 })
-

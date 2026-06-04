@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { useRoute } from 'vue-router'
 import { ref, computed, onMounted } from 'vue'
 import { useChampionsStore } from '../stores/champions'
@@ -11,7 +11,7 @@ const router = useRouter()
 const store = useChampionsStore()
 const { version } = storeToRefs(store)
 
-const champion = ref(null)
+const dsf = ref(null)
 const isLoading = ref(true)
 const error = ref(null)
 const championSkins = ref(0)
@@ -60,16 +60,21 @@ function formatCost(spell) {
   let type = (spell.costType ?? '').trim()
 
   if (type.includes('abilityresourcename')) {
-    type = champion.value.partype
+    type = dsf.value.partype
   }
 
   if (!cost || cost === '0' || type === 'No Cost') return 'No Cost'
   return type ? `${cost} ${type}` : cost
 }
 
-const allSkins = computed(() =>
-  champion.value?.skins.filter(skin => !skin.name.includes('(')) ?? []
-)
+const allSkins = computed(() => {
+  const championName = dsf.value?.name
+  if (!championName) return []
+
+  return (
+    dsf.value?.skins.filter((skin) => skin.name === 'default' || skin.name.trim().endsWith(championName)) ?? []
+  )
+})
 
 const canScroll = computed(() => allSkins.value.length > 4)
 
@@ -77,7 +82,7 @@ const visibleSkins = computed(() => {
   const skins = allSkins.value
   if (!skins.length) return []
   if (skins.length <= 4) return skins
-  return [0, 1, 2, 3].map(offset => skins[(skinsIndex.value + offset) % skins.length])
+  return [0, 1, 2, 3].map((offset) => skins[(skinsIndex.value + offset) % skins.length])
 })
 
 function scrollSkins(dir) {
@@ -88,10 +93,10 @@ function scrollSkins(dir) {
 onMounted(async () => {
   try {
     const res = await fetch(
-      `https://ddragon.leagueoflegends.com/cdn/${version.value}/data/en_US/champion/${route.params.id}.json`
+      `/api/ddragon/cdn/${version.value}/data/en_US/champion/${route.params.id}.json`
     )
     const data = await res.json()
-    champion.value = Object.values(data.data)[0]
+    dsf.value = Object.values(data.data)[0]
   } catch (err) {
     error.value = err.message
   } finally {
@@ -101,55 +106,63 @@ onMounted(async () => {
 </script>
 
 <template>
-  <main class="champion-detail-view">
-    <button class="back-button" @click="router.back()">← Back</button>
+  <main class="dsf-detail-view">
+    <button class="back-button" @click="router.back()"><- Back</button>
     <div v-if="isLoading" class="status-message">Loading...</div>
     <div v-else-if="error" class="status-message error">{{ error }}</div>
 
-    <div v-else class="champion-detail">
-      <div class="champion-header">
-        <img :src="`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${champion.id}.png`"
-          :alt="champion.name" />
+    <div v-else class="dsf-detail">
+      <div class="dsf-header">
+        <img
+          :src="`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${dsf.id}.png`"
+          :alt="dsf.name"
+        />
         <div>
-          <h1>{{ champion.name }}</h1>
-          <p class="champion-title">{{ champion.title }}</p>
+          <h1>{{ dsf.name }}</h1>
+          <p class="dsf-title">{{ dsf.title }}</p>
         </div>
       </div>
 
-      <section class="champion-lore">
+      <section class="dsf-lore">
         <h2>Lore</h2>
-        <p>{{ champion.lore }}</p>
+        <p>{{ dsf.lore }}</p>
       </section>
 
-      <section class="champion-stats">
+      <section class="dsf-stats">
         <h2>Base Stats</h2>
         <ul>
-          <li v-for="(value, key) in champion.stats" :key="key">
+          <li v-for="(value, key) in dsf.stats" :key="key">
             <span>{{ formatStatKey(key) }}</span>
             <span>{{ value }}</span>
           </li>
         </ul>
       </section>
 
-      <section class="champion-abilities">
+      <section class="dsf-abilities">
         <h2>Abilities</h2>
 
         <div class="ability">
           <div class="ability-header">
-            <img :src="`https://ddragon.leagueoflegends.com/cdn/${version}/img/passive/${champion.passive.image.full}`"
-              :alt="champion.passive.name" class="ability-icon" />
+            <img
+              :src="`https://ddragon.leagueoflegends.com/cdn/${version}/img/passive/${dsf.passive.image.full}`"
+              :alt="dsf.passive.name"
+              class="ability-icon"
+            />
             <div class="ability-title">
               <span class="ability-slot">Passive</span>
-              <strong>{{ champion.passive.name }}</strong>
+              <strong>{{ dsf.passive.name }}</strong>
             </div>
           </div>
-          <p v-html="formatDescription(champion.passive.description)"></p>
+          <p v-html="formatDescription(dsf.passive.description)"></p>
         </div>
 
-        <div v-for="(spell, index) in champion.spells" :key="spell.id" class="ability">
+        <div v-for="(spell, index) in dsf.spells" :key="spell.id" class="ability">
           <div class="ability-header">
-            <img :src="`https://ddragon.leagueoflegends.com/cdn/${version}/img/spell/${spell.image.full}`"
-              :alt="spell.name" class="ability-icon" />
+            <img
+              :src="`https://ddragon.leagueoflegends.com/cdn/${version}/img/spell/${spell.image.full}`"
+              :alt="spell.name"
+              class="ability-icon"
+            />
             <div class="ability-title">
               <span class="ability-slot">{{ ['Q', 'W', 'E', 'R'][index] }}</span>
               <strong>{{ spell.name }}</strong>
@@ -168,21 +181,25 @@ onMounted(async () => {
         <h2>Skins</h2>
 
         <div class="skin-carousel">
-          <button v-if="canScroll" class="skin-btn" @click="scrollSkins(-1)">←</button>
+          <button v-if="canScroll" class="skin-btn" @click="scrollSkins(-1)"><</button>
           <TransitionGroup name="skin-scroll" tag="div" class="skin-strip">
             <div v-for="skin in visibleSkins" :key="skin.num" class="skin-card">
-              <img class="skin-splash"
-                :src="`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champion.id}_${skin.num}.jpg`"
-                :alt="skin.name" />
+              <img
+                class="skin-splash"
+                :src="`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${dsf.id}_${skin.num}.jpg`"
+                :alt="skin.name"
+              />
               <div class="skin-loading-popup">
-                <img class="skin-loading"
-                  :src="`https://ddragon.leagueoflegends.com/cdn/img/champion/loading/${champion.id}_${skin.num}.jpg`"
-                  :alt="skin.name" />
-                <div class="skin-name">{{ skin.name === 'default' ? champion.name : skin.name }}</div>
+                <img
+                  class="skin-loading"
+                  :src="`https://ddragon.leagueoflegends.com/cdn/img/champion/loading/${dsf.id}_${skin.num}.jpg`"
+                  :alt="skin.name"
+                />
+                <div class="skin-name">{{ skin.name === 'default' ? dsf.name : skin.name }}</div>
               </div>
             </div>
           </TransitionGroup>
-          <button v-if="canScroll" class="skin-btn" @click="scrollSkins(1)">→</button>
+          <button v-if="canScroll" class="skin-btn" @click="scrollSkins(1)">></button>
         </div>
       </section>
     </div>
@@ -190,7 +207,7 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.champion-detail-view {
+.dsf-detail-view {
   padding: 2rem;
   flex: 1;
   max-width: 900px;
@@ -209,14 +226,14 @@ onMounted(async () => {
   color: var(--color-gold);
 }
 
-.champion-header {
+.dsf-header {
   display: flex;
   align-items: center;
   gap: 2rem;
   margin-bottom: 2.5rem;
 }
 
-.champion-header img {
+.dsf-header img {
   width: 120px;
   height: 120px;
   border-radius: var(--radius);
@@ -224,14 +241,14 @@ onMounted(async () => {
   object-fit: cover;
 }
 
-.champion-header h1 {
+.dsf-header h1 {
   font-size: 2.5rem;
   color: var(--color-gold-light);
   line-height: 1;
   margin-bottom: 0.4rem;
 }
 
-.champion-header .champion-title {
+.dsf-header .dsf-title {
   color: var(--color-text-muted);
   font-style: italic;
   font-size: 1rem;
@@ -251,19 +268,19 @@ section h2 {
   margin-bottom: 1rem;
 }
 
-.champion-lore p {
+.dsf-lore p {
   color: var(--color-text-muted);
   line-height: 1.7;
 }
 
-.champion-stats ul {
+.dsf-stats ul {
   list-style: none;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 0.4rem;
 }
 
-.champion-stats li {
+.dsf-stats li {
   display: flex;
   justify-content: space-between;
   padding: 0.4rem 0.75rem;
@@ -272,12 +289,12 @@ section h2 {
   font-size: 0.875rem;
 }
 
-.champion-stats li span:first-child {
+.dsf-stats li span:first-child {
   color: var(--color-text-muted);
   text-transform: capitalize;
 }
 
-.champion-stats li span:last-child {
+.dsf-stats li span:last-child {
   color: var(--color-text);
   font-weight: 600;
 }
@@ -397,7 +414,9 @@ section h2 {
   border: 2px solid var(--color-gold-dark);
   overflow: hidden;
   opacity: 0;
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
   z-index: 20;
   pointer-events: none;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
@@ -449,3 +468,4 @@ section h2 {
   opacity: 0;
 }
 </style>
+
