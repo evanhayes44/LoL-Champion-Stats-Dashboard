@@ -1,6 +1,8 @@
 import { ref, computed, toRaw } from 'vue'
 import { defineStore } from 'pinia'
 
+const API_BASE = 'https://lol-dashboard-api.onrender.com/api'
+
 export const useChampionsStore = defineStore('champions', () => {
     const champions = ref([])
     const searchQuery = ref('')
@@ -25,7 +27,7 @@ export const useChampionsStore = defineStore('champions', () => {
         error.value = null
 
         try {
-            const versionRes = await fetch('/api/ddragon/api/versions.json')
+            const versionRes = await fetch(`${API_BASE}/ddragon/api/versions.json`)
             if (!versionRes.ok) {
                 throw new Error(`Failed to fetch versions (${versionRes.status})`)
             }
@@ -43,7 +45,7 @@ export const useChampionsStore = defineStore('champions', () => {
                 return
             }
 
-            const champRes = await fetch(`/api/ddragon/cdn/${latestVersion}/data/en_US/champion.json`)
+            const champRes = await fetch(`${API_BASE}/ddragon/cdn/${latestVersion}/data/en_US/champion.json`)
             if (!champRes.ok) {
                 throw new Error(`Failed to fetch champions (${champRes.status})`)
             }
