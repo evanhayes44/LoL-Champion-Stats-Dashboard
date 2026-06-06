@@ -11,6 +11,16 @@ export default defineConfig([
     files: ['**/*.{vue,js,mjs,jsx}'],
   },
 
+  {
+    name: 'electron/node-env',
+    files: ['electron/**/*.{js,cjs}'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
+
   globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
 
   {

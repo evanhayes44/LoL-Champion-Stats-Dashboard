@@ -1,7 +1,6 @@
 import { ref, computed, toRaw } from 'vue'
 import { defineStore } from 'pinia'
-
-const API_BASE = 'https://lol-dashboard-api.onrender.com/api'
+import { DDRAGON_BASE } from '../api.js'
 
 export const useChampionsStore = defineStore('champions', () => {
     const champions = ref([])
@@ -27,9 +26,10 @@ export const useChampionsStore = defineStore('champions', () => {
         error.value = null
 
         try {
-            const versionRes = await fetch(`${API_BASE}/ddragon/api/versions.json`)
+            const versionRes = await fetch(`${DDRAGON_BASE}/api/versions.json`)
             if (!versionRes.ok) {
-                throw new Error(`Failed to fetch versions (${versionRes.status})`)
+                error.value = `Failed to fetch versions (${versionRes.status})`
+                return
             }
             const versions = await versionRes.json()
             const latestVersion = versions[0]
@@ -45,9 +45,10 @@ export const useChampionsStore = defineStore('champions', () => {
                 return
             }
 
-            const champRes = await fetch(`${API_BASE}/ddragon/cdn/${latestVersion}/data/en_US/champion.json`)
+            const champRes = await fetch(`${DDRAGON_BASE}/cdn/${latestVersion}/data/en_US/champion.json`)
             if (!champRes.ok) {
-                throw new Error(`Failed to fetch champions (${champRes.status})`)
+                error.value = `Failed to fetch champions (${champRes.status})`
+                return
             }
             const champData = await champRes.json()
             champions.value = Object.values(champData.data)

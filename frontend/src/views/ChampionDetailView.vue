@@ -1,6 +1,7 @@
 ﻿<script setup>
 import { useRoute } from 'vue-router'
 import { ref, computed, onMounted } from 'vue'
+import { DDRAGON_BASE } from '../api.js'
 import { useChampionsStore } from '../stores/champions'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
@@ -14,7 +15,6 @@ const { version } = storeToRefs(store)
 const dsf = ref(null)
 const isLoading = ref(true)
 const error = ref(null)
-const championSkins = ref(0)
 const skinsIndex = ref(0)
 
 const statLabels = {
@@ -93,7 +93,7 @@ function scrollSkins(dir) {
 onMounted(async () => {
   try {
     const res = await fetch(
-      `/api/ddragon/cdn/${version.value}/data/en_US/champion/${route.params.id}.json`
+      `${DDRAGON_BASE}/cdn/${version.value}/data/en_US/champion/${route.params.id}.json`
     )
     const data = await res.json()
     dsf.value = Object.values(data.data)[0]
@@ -107,7 +107,7 @@ onMounted(async () => {
 
 <template>
   <main class="dsf-detail-view">
-    <button class="back-button" @click="router.back()"><- Back</button>
+    <button class="back-button" @click="router.back()">&larr; Back</button>
     <div v-if="isLoading" class="status-message">Loading...</div>
     <div v-else-if="error" class="status-message error">{{ error }}</div>
 
@@ -181,7 +181,7 @@ onMounted(async () => {
         <h2>Skins</h2>
 
         <div class="skin-carousel">
-          <button v-if="canScroll" class="skin-btn" @click="scrollSkins(-1)"><</button>
+          <button v-if="canScroll" class="skin-btn" @click="scrollSkins(-1)">&lsaquo;</button>
           <TransitionGroup name="skin-scroll" tag="div" class="skin-strip">
             <div v-for="skin in visibleSkins" :key="skin.num" class="skin-card">
               <img
@@ -199,7 +199,7 @@ onMounted(async () => {
               </div>
             </div>
           </TransitionGroup>
-          <button v-if="canScroll" class="skin-btn" @click="scrollSkins(1)">></button>
+          <button v-if="canScroll" class="skin-btn" @click="scrollSkins(1)">&rsaquo;</button>
         </div>
       </section>
     </div>
