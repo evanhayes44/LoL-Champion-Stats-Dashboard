@@ -4,14 +4,14 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   // base './' makes all asset paths relative — required for Electron to load
   // the built index.html from disk (file://) rather than a web server
   base: './',
   plugins: [
     vue(),
-    vueDevTools(),
-  ],
+    command === 'serve' && vueDevTools(),
+  ].filter(Boolean),
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
@@ -22,4 +22,4 @@ export default defineConfig({
       '/api': 'http://localhost:8080',
     },
   },
-})
+}))
