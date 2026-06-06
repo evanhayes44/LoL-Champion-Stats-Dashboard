@@ -2,6 +2,7 @@
 import { RouterLink, RouterView } from 'vue-router'
 import { useChampionsStore } from './stores/champions'
 import { onMounted } from 'vue'
+import TitleBar from './components/TitleBar.vue'
 
 const championsStore = useChampionsStore()
 
@@ -12,9 +13,10 @@ onMounted(() => {
 
 <template>
   <div class="app-shell">
+    <TitleBar />
     <header class="app-header">
       <RouterLink to="/" class="app-logo">
-        <span class="logo-text">Champion Stats</span>
+        <span class="logo-text">Champions</span>
       </RouterLink>
     </header>
 

@@ -29,7 +29,7 @@
 body {
   background-color: var(--color-bg);
   color: var(--color-text);
-  font-family: var(--font-main);
+  font-family: var(--font-main), serif;
   min-height: 100vh;
 }
 
@@ -48,4 +48,22 @@ button {
 a {
   color: var(--color-gold);
   text-decoration: none;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-soft);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-gold-dark);
 }

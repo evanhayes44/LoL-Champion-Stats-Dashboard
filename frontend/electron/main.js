@@ -25,10 +25,33 @@ ipcMain.handle('cache:set', (event, data) => {
     }
 })
 
+ipcMain.on('window:minimize', (event) => {
+    BrowserWindow.fromWebContents(event.sender)?.minimize()
+})
+
+ipcMain.on('window:maximize', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (win?.isMaximized()) win.unmaximize()
+    else win?.maximize()
+})
+
+ipcMain.on('window:close', (event) => {
+    BrowserWindow.fromWebContents(event.sender)?.close()
+})
+
+ipcMain.handle('window:is-maximized', (event) => {
+    return BrowserWindow.fromWebContents(event.sender)?.isMaximized() ?? false
+})
+
+let win
+
 function createWindow() {
-    const win = new BrowserWindow({
+    win = new BrowserWindow({
         width: 1280,
         height: 800,
+        frame: false,
+        titleBarStyle: 'hidden',
+        show: false,
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
@@ -36,20 +59,22 @@ function createWindow() {
         },
     })
 
-    // app.isPackaged is false when running with `electron .` in dev,
-    // and true when distributed via electron-builder.
     if (!app.isPackaged) {
         win.loadURL('http://localhost:5173')
         win.webContents.openDevTools()
     } else {
         win.loadFile(path.join(__dirname, '../dist/index.html'))
     }
+
+    win.once('ready-to-show', () => {
+        win.maximize()
+        win.show()
+    })
 }
 
 app.whenReady().then(() => {
     createWindow()
 
-    // macOS: re-create the window when the dock icon is clicked and no windows are open
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
             createWindow()
@@ -57,7 +82,6 @@ app.whenReady().then(() => {
     })
 })
 
-// Windows/Linux: quit the app when all windows are closed
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit()
