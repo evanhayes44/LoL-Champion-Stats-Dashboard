@@ -2,30 +2,16 @@
 
 Desktop app for browsing League of Legends champions, stats, abilities, lore, and skins.
 
-This repository is a monorepo with:
-
-- `frontend/` - Electron + Vue desktop client (primary app)
-- `backend/` - Spring Boot + PostgreSQL API (optional service for persisted champion data + proxy endpoints)
+All app code lives in `frontend/` (Electron + Vue desktop client). The app talks directly to Riot's public Data Dragon CDN and has no backend dependency.
 
 ## Current Architecture
 
-### Frontend runtime (what the desktop app uses today)
+### Runtime
 
 1. Electron starts a frameless desktop window with a custom title bar and window controls.
 2. Vue/Pinia fetches champion version and champion data directly from Riot Data Dragon CDN.
 3. Data is cached to disk via Electron IPC (`cache:get`, `cache:set`) for faster relaunch.
 4. Champion detail pages load full champion payloads from Data Dragon using the selected version.
-
-### Backend runtime (optional)
-
-- Spring Boot exposes:
-  - `/api/health`
-  - `/api/champions` and `/api/champions/{riotId}` (PostgreSQL-backed data)
-  - `/api/ddragon/...` compatibility/proxy endpoints
-- Flyway migration creates the `champion` table.
-- A scheduled sync service pulls Data Dragon champion summary data on startup and every 12 hours.
-
-> Note: the current frontend no longer requires the backend to run.
 
 ## Tech Stack
 
@@ -34,8 +20,6 @@ This repository is a monorepo with:
 | Desktop | Electron 42 |
 | Frontend | Vue 3, Pinia, Vue Router, Vite |
 | Styling | CSS variables + custom scrollbar + custom title bar |
-| Backend | Spring Boot 3.5, Spring Web, Spring Data JPA, Flyway |
-| Database | PostgreSQL |
 | Build/Release | electron-builder + GitHub Actions + GitHub Releases |
 
 ## Features
@@ -74,30 +58,12 @@ frontend/
   public/garfield.ico
   vite.config.js
   package.json
-
-backend/
-  src/main/java/com/lolstats/backend/
-    champion/            # Entity, repo, service, sync job, ddragon client/controllers
-    config/HttpConfig.java
-    health/HealthController.java
-  src/main/resources/
-    application.properties
-    db/migration/V1__create_champion_table.sql
-  pom.xml
 ```
 
 ## Prerequisites
 
-### Frontend
-
 - Node `^20.19.0 || >=22.12.0`
 - npm
-
-### Backend (optional)
-
-- Java 21+
-- Maven 3.8+
-- PostgreSQL
 
 ## Run the Desktop App (recommended)
 
@@ -118,40 +84,6 @@ This is enough to run and use the app.
 | `npm run electron:build` | Build desktop installer/artifacts with electron-builder |
 | `npm run lint` | Run oxlint + eslint |
 | `npm run format` | Format frontend source files |
-
-## Backend Setup (optional)
-
-If you want to run the API/database service:
-
-1. Create PostgreSQL database/user.
-2. Set datasource env vars (or use defaults from `application.properties`):
-   - `SPRING_DATASOURCE_URL` (default `jdbc:postgresql://localhost:5432/lolstats`)
-   - `SPRING_DATASOURCE_USERNAME` (default `lol_user`)
-   - `SPRING_DATASOURCE_PASSWORD` (default `lol_pass`)
-   - `SPRING_JPA_HIBERNATE_DDL_AUTO` (default `validate`)
-3. Run:
-
-```powershell
-cd backend
-mvn spring-boot:run
-```
-
-Health check:
-
-```powershell
-curl http://localhost:8080/api/health
-```
-
-## Backend Endpoints
-
-| Endpoint | Method | Description |
-|---|---|---|
-| `/api/health` | GET | Health check |
-| `/api/champions` | GET | List champions from DB |
-| `/api/champions/{riotId}` | GET | Get one champion from DB |
-| `/api/ddragon/api/versions.json` | GET | Data Dragon versions proxy |
-| `/api/ddragon/cdn/{version}/data/en_US/champion.json` | GET | Champion summary proxy |
-| `/api/ddragon/cdn/{version}/data/en_US/champion/{championId}.json` | GET | Champion detail proxy |
 
 ## Packaging and Local Builds
 
